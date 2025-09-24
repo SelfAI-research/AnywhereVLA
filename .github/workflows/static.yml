@@ -37,7 +37,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload entire repository
-          path: 'https://github.com/SelfAI-research/AnywhereVLA/blob/main/.github/workflows/AnywhereVLA.html'
+          path: '.github/workflows/AnywhereVLA.html'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
