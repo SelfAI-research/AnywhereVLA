@@ -33,11 +33,13 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      - name: Create artifact directory
+        run: mkdir -p _site && cp .github/workflows/AnywhereVLA.html _site/index.html && cp .github/workflows/arxiv.svg _site/arxiv.svg
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          # Upload only the _site directory
+          path: '_site'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
