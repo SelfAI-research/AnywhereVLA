@@ -92,6 +92,18 @@
       margin: 60px auto 20px;
       font-size: 1.8em;
     }
+
+    /* --- NEW STYLES FOR TOP VIDEO CAPTION --- */
+    .video-caption-top {
+      font-weight: bold;
+      font-size: 2em; /* twice as large */
+      text-align: justify;
+      max-width: 80%;
+      margin: 0 auto 20px auto;
+      line-height: 1.3em;
+    }
+
+    /* --- UPDATED BIBTEX BOX --- */
     .bibtex {
       background-color: #f5f5f5;
       padding: 20px;
@@ -125,22 +137,23 @@
         />
       </a>
       <a href="https://arxiv.org/placeholder" class="link-box" target="_blank">
-        <img src="arxiv.svg" alt="arXiv Logo" />
+        <img src="https://raw.githubusercontent.com/SelfAI-research/AnywhereVLA/main/.github/workflows/arxiv.svg" alt="arXiv Logo" />
       </a>
     </div>
   </div>
 
   <div class="content">
+    <!-- VIDEO SECTION WITH CAPTION ABOVE -->
+    <div class="video-caption-top">
+      We introduce AnywhereVLA, modular pipeline to perform mobile manipulation in large-scale
+      novel dynamic indoor environments with just one language command.
+    </div>
     <figure>
       <div class="media-container">
-        <video controls>
+        <video controls loop>
           <source src="https://raw.githubusercontent.com/SelfAI-research/AnywhereVLA/main/.github/workflows/anywhereVLA5x.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
-        <figcaption class="caption-left">
-          We introduce AnywhereVLA, modular pipeline to perform mobile manipulation in large-scale
-          novel dynamic indoor environments with just one language command.
-        </figcaption>
       </div>
     </figure>
 
