@@ -74,9 +74,21 @@
       height: auto;
       border-radius: 8px;
     }
+
+    /* --- VIDEO CAPTION (TOP) --- */
+    .video-caption-top {
+      font-weight: bold;
+      font-size: 1.5em; /* slightly smaller */
+      text-align: justify;
+      max-width: 80%;
+      margin: 0 auto 20px auto;
+      line-height: 1.4em;
+    }
+
+    /* --- FIGURE CAPTIONS --- */
     figcaption {
       font-style: normal;
-      font-size: 1em;
+      font-size: 1.2em; /* increased from 1em */
       margin-top: 10px;
       width: 100%;
     }
@@ -86,6 +98,8 @@
     .caption-justify {
       text-align: justify;
     }
+
+    /* --- HEADINGS --- */
     h2 {
       text-align: left;
       max-width: 80%;
@@ -93,25 +107,15 @@
       font-size: 1.8em;
     }
 
-    /* --- NEW STYLES FOR TOP VIDEO CAPTION --- */
-    .video-caption-top {
-      font-weight: bold;
-      font-size: 2em; /* twice as large */
-      text-align: justify;
-      max-width: 80%;
-      margin: 0 auto 20px auto;
-      line-height: 1.3em;
-    }
-
-    /* --- UPDATED BIBTEX BOX --- */
+    /* --- BIBTEX BOX --- */
     .bibtex {
       background-color: #f5f5f5;
       padding: 20px;
       font-family: monospace;
       text-align: left;
       white-space: pre;
-      max-width: 80%;
-      margin: 40px auto;
+      width: 80%;
+      margin: 40px auto 0 auto; /* same horizontal centering as headings */
       border-radius: 8px;
     }
   </style>
