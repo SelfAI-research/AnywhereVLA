@@ -75,17 +75,13 @@
         }
         figcaption {
             font-style: normal;
-            text-align: center;
+            text-align: justify;
             font-size: 1em;
             margin-top: 10px;
-            width: 100%;
-        }
-        /* Special style for architecture caption */
-        .figcaption-architecture {
-            text-align: justify;
             max-width: 80%;
-            margin: 10px auto 0;
-            font-style: normal;
+        }
+        .video-caption {
+            font-size: 1.1em; /* one size bigger */
         }
         h2 {
             text-align: left;
@@ -126,16 +122,18 @@
     <div class="content">
         <figure>
             <video controls>
-                <source src=".github/workflows/anywhereVLA5x.mp4" type="video/mp4">
+                <source src=".anywhereVLA5x.mp4" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
-            <figcaption>We introduce AnywhereVLA, modular pipeline to perform mobile manipulation in large-scale novel dynamic indoor environments with just one language command.</figcaption>
+            <figcaption class="video-caption">
+                We introduce AnywhereVLA, modular pipeline to perform mobile manipulation in large-scale novel dynamic indoor environments with just one language command.
+            </figcaption>
         </figure>
 
         <h2>AnywhereVLA Architecture</h2>
         <figure>
-            <img src=".github/workflows/architecture.png" alt="AnywhereVLA Architecture">
-            <figcaption class="figcaption-architecture">
+            <img src="architecture.png" alt="AnywhereVLA Architecture">
+            <figcaption>
                 AnywhereVLA is the modular architecture comprising VLA manipulation and environment exploration. 
                 Given the task, AnywhereVLA parses it into simpler actions which further condition Active Environment Exploration. 
                 Exploration and navigation in larger-scale indoor environments are performed within a 3D point cloud semantic map. 
@@ -145,8 +143,10 @@
 
         <h2>Applications</h2>
         <figure>
-            <img src=".github/workflows/teaser.png" alt="Applications">
-            <figcaption>Use cases.</figcaption>
+            <img src="teaser.png" alt="Applications">
+            <figcaption>
+                Use cases.
+            </figcaption>
         </figure>
 
         <h2>BibTex</h2>
