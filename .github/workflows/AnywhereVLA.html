@@ -24,12 +24,12 @@
             font-size: 1.2em;
             margin: 10px 0;
         }
-        .institution {
-            font-size: 1.1em;
-            margin-bottom: 10px;
-        }
         .contribution {
             font-size: 1em;
+            margin-bottom: 10px;
+        }
+        .institution {
+            font-size: 1.1em;
             margin-bottom: 20px;
         }
         .links {
@@ -59,27 +59,26 @@
             padding: 40px;
             text-align: center;
         }
-        video {
-            max-width: 80%;
-            height: auto;
-            display: block;
-            margin: 0 auto 10px;
-            border-radius: 8px;
-        }
         figure {
             margin: 40px auto;
-            text-align: center;
-            max-width: 80%;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: fit-content;
         }
-        figure img {
-            width: 100%;
+        video, img {
+            display: block;
+            max-width: 100%;
             height: auto;
             border-radius: 8px;
         }
         figcaption {
-            font-style: italic;
-            font-size: 0.95em;
+            font-style: normal;
+            text-align: left;
+            font-size: 1em;
             margin-top: 10px;
+            width: 100%;
         }
         h2 {
             text-align: left;
@@ -105,8 +104,8 @@
         <div class="authors">
             Konstantin Gubernatorov*, Artem Voronov*, Roman Voronov*, Sergei Pasynkov*, Stepan Perminov, Ziang Guo, and Dzmitry Tsetserukou
         </div>
-        <div class="institution">Skolkovo Institute of Science and Technology</div>
         <div class="contribution">*Equal contribution</div>
+        <div class="institution">Skolkovo Institute of Science and Technology</div>
         <div class="links">
             <a href="https://github.com/SelfAI-research/AnywhereVLA" class="link-box" target="_blank">
                 <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub Logo">
@@ -150,4 +149,3 @@
     </div>
 </body>
 </html>
-
