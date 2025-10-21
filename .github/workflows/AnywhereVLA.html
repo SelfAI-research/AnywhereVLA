@@ -61,7 +61,7 @@
         }
         figure {
             margin: 40px auto;
-            text-align: left;
+            text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -75,10 +75,17 @@
         }
         figcaption {
             font-style: normal;
-            text-align: left;
+            text-align: center;
             font-size: 1em;
             margin-top: 10px;
             width: 100%;
+        }
+        /* Special style for architecture caption */
+        .figcaption-architecture {
+            text-align: justify;
+            max-width: 80%;
+            margin: 10px auto 0;
+            font-style: normal;
         }
         h2 {
             text-align: left;
@@ -128,7 +135,12 @@
         <h2>AnywhereVLA Architecture</h2>
         <figure>
             <img src=".github/workflows/architecture.png" alt="AnywhereVLA Architecture">
-            <figcaption>AnywhereVLA is the modular architecture comprising VLA manipulation and environment exploration. Given the task, AnywhereVLA parses it into simpler actions which further condition Active Environment Exploration. Exploration and navigation in larger-scale indoor environments are performed within a 3D point cloud semantic map. By leveraging a purpose-built pick-and-place dataset, AnywhereVLA exhibits robust generalization capacities.</figcaption>
+            <figcaption class="figcaption-architecture">
+                AnywhereVLA is the modular architecture comprising VLA manipulation and environment exploration. 
+                Given the task, AnywhereVLA parses it into simpler actions which further condition Active Environment Exploration. 
+                Exploration and navigation in larger-scale indoor environments are performed within a 3D point cloud semantic map. 
+                By leveraging a purpose-built pick-and-place dataset, AnywhereVLA exhibits robust generalization capacities.
+            </figcaption>
         </figure>
 
         <h2>Applications</h2>
