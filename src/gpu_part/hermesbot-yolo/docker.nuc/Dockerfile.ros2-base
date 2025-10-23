@@ -1,0 +1,39 @@
+# ───── Base image ────────────────────────────────────────────────
+ARG ROS_DISTRO=humble
+FROM ros:${ROS_DISTRO} AS base
+ENV DEBIAN_FRONTEND=noninteractive
+
+# ────────── system setup ──────────
+RUN apt-get update && \
+    apt-get install -y tzdata && \
+    ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata
+
+# ────────── build & ROS deps ──────────
+RUN apt-get update && apt-get install -y --quiet --no-install-recommends \
+    build-essential cmake git wget vim curl python3-pip \
+    libpcl-dev libeigen3-dev libopencv-dev \
+    ros-humble-sophus \
+    ros-humble-rmw-fastrtps-cpp \
+    ros-humble-rmw-fastrtps-dynamic-cpp \
+    ros-humble-image-transport \
+    ros-humble-cv-bridge \
+    ros-humble-tf2-ros \
+    ros-humble-pcl-ros \
+    ros-humble-rviz2 \
+    ros-humble-compressed-image-transport \
+    ros-humble-theora-image-transport \
+    ros-humble-compressed-depth-image-transport \
+    ros-humble-image-transport-plugins \
+    ros-humble-pcl-conversions \
+    ros-humble-rosbag2-* \
+    ros-humble-rmw-cyclonedds-cpp
+
+# ────────── python utilities ──────────
+RUN pip install --no-cache-dir rosbags scipy
+
+
+# ────────── shell convenience ──────────
+RUN echo 'source /opt/ros/humble/setup.bash'       >> /root/.bashrc
+
+CMD ["/bin/bash"]

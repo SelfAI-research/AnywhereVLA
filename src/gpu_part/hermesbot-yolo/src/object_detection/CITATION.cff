@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "yolo_ros (maintained fork)"
+abstract: "ROS 2 wrapper for Ultralytics YOLO to perform detection, tracking, instance segmentation, human pose estimation, and oriented bounding boxes (OBB). This repository is a maintained and significantly modified fork of mgonzs13/yolo_ros."
+version: "4.2.0"
+date-released: 2025-08-31
+license: GPL-3.0-or-later
+keywords:
+  - ROS 2
+  - YOLO
+  - object detection
+  - tracking
+  - segmentation
+  - pose estimation
+  - OBB
+authors:
+  - family-names: "Voronov"
+    given-names: "Artem"
+    email: "artem.voronov@skoltech.ru"
+    affiliation: "Skoltech"
+    roles: [ "maintainer" ]
+  - family-names: "González-Santamarta"
+    given-names: "Miguel Ángel"
+    roles: [ "original-author" ]
+
+preferred-citation:
+  type: software
+  title: "yolo_ros (maintained fork)"
+  authors:
+    - family-names: "Voronov"
+      given-names: "Artem"
+    - family-names: "González-Santamarta"
+      given-names: "Miguel Ángel"
+  year: 2025
+  version: "4.2.0"

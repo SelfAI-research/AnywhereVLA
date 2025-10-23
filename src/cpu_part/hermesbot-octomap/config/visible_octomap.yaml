@@ -1,0 +1,51 @@
+# ==================== I/O ====================
+io:
+  frame_id: "camera_init"            # Global/map frame id for the output OccupancyGrid and TF lookups
+  sensor_frame_id: "velodyne"        # Sensor frame id used to fetch the sensor origin for raycasting
+
+  input_topic: "/cloud_effected"            # Input point cloud topic (PointCloud2, points already in map frame)
+  output_topic: "/visible_map"            # Output OccupancyGrid topic
+  output_prob_topic: "/visible_map_prob"  # Output probability grid topic
+
+  input_qos:                       # QoS for input subscriber
+    reliability: "best_effort"     # best_effort | reliable
+    depth: 1                       # queue depth
+
+  output_qos:                      # QoS for output publisher
+    durability: "transient_local"  # transient_local publishes latched-style occupancy grid; options: transient_local | volatile
+    depth: 1                       # queue depth
+
+  # ----- Low-latency TF fallback policy -----
+  tf_cache_sec: 10.0                # TF buffer cache length in seconds
+  tf_wait_sec: 0.02                 # Short wait for exact transform at cloud stamp
+  tf_max_staleness_sec: 0.20        # Accept latest TF if it's <= this old vs cloud stamp
+  tf_reuse_last_sec: 0.50           # Reuse last good origin up to this age when TF is missing
+
+# ==================== 2D Map / Sensor Model ====================
+map:
+  output_level: 0.05                 # z-level for map
+  resolution: 0.08                   # Occupancy grid resolution in meters
+  prob_hit: 0.82                     # P(hit) added at endpoints
+  prob_miss: 0.48                    # P(miss) used for free-space along rays
+  clamp_min: 0.12                    # Probability clamp min (log-odds lower bound)
+  clamp_max: 0.95                    # Probability clamp max (log-odds upper bound)
+  occ_threshold: 0.6                 # Threshold to mark a cell occupied in the exported grid (> 0.5)
+  initial_size: [10.0, 10.0]         # Initial map size (meters), ensures initial canvas
+  raycast_free_space: true           # If true, carve free space along rays; if false, endpoints-only
+  angle_bin_deg: 1                   # quantize bearings and keep nearest point per bearing (stop at first hit in scan).
+  use_map_occlusion: true            # if True, stop a ray early if it meets an already-occupied cell in the map
+  clear_occluder: true               # if true, when the first occupied cell on the path is found, also apply a free update to that cell (clears dynamic obstacle)
+  raycast_range: [0.2, 1.8]         # Min and max range for raycasting (meters); set max range -1 for unlimited
+
+# ==================== Preprocessing ====================
+preproc:
+  z_range: [-0.5, 0.35]              # Keep only points within [z_min, z_max]
+  outlier_mode: "none"            # Outlier filter: none | density (keeps dense grid cells)
+  outlier_grid_r: 0.3                # Grid size for density outlier filter (meters)
+  outlier_min_pts_per_cell: 2        # Minimum points per grid cell to keep
+  range_filter: [0.0, 25.0]          # Min and Max point distance (meters); set max range -1 for unlimited
+  fov_filter: [-35.0, 35.0]        # Min and Max field of view (degrees);
+
+# ==================== Logging ====================
+logging:
+  debug: true                       # Set node logger to DEBUG and print per-callback timings

@@ -1,0 +1,26 @@
+calibration_date: '2025-08-28 01:40:02'
+camera_matrix:
+  rows: 3
+  columns: 3
+  data:
+  - 605.194580078125
+  - 0.0
+  - 313.7639465332031
+  - 0.0
+  - 604.2938232421875
+  - 238.30349731445312
+  - 0.0
+  - 0.0
+  - 1.0
+distortion_coefficients:
+  rows: 1
+  columns: 5
+  data:
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+image_size:
+  width: 640
+  height: 480

@@ -1,0 +1,8 @@
+"""Shared exceptions for clear control flow and logging."""
+class NoMapError(Exception): """No map/costmap available."""
+class InvalidObjectPointError(Exception): """Object point invalid or outside."""
+class NoFaceDetectedError(Exception): """Boundary/face cannot be recovered."""
+class GoalBlockedError(Exception): """Candidate goal violates clearance."""
+class TfError(Exception): """TF lookup/transform error."""
+class PlannerServiceError(Exception): """Planner service call error."""
+class PlannerActionError(Exception): """Planner action call error."""

@@ -1,0 +1,74 @@
+/**:
+  ros__parameters:
+    stop:
+      standoff_m: 0.06
+      safety_margin_m: 0.0
+
+    costmap:
+      use_nav2_global: true
+      topic: "/global_costmap/costmap"   # nav2_msgs/Costmap
+      fallback_map_topic: "/map"
+
+      lethal_threshold: 100
+      inscribed_threshold: 99
+      unknown_cost: 255
+      free_cost: 0
+
+      unknown_as_obstacle: true
+
+    approach:
+      normal_method: "distance_gradient"     # "distance_gradient" | "pca_boundary" | "raycast_free_space"
+      max_search_radius_m: 1.0
+      sample_step_m: 0.02
+      min_face_span_m: 0.25
+      max_edge_slide_m: 0.40
+      edge_slide_step_m: 0.05
+      gap_close_m: 0.08                      # bridges tiny LiDAR gaps
+
+    validation:
+      min_free_ring_m: 0.0
+      disallow_inscribed: true
+
+    retry:
+      num_angles: 1
+      num_offsets: 1
+      offset_step_m: 0.05
+      max_candidates: 4
+
+    nav2_check:
+      enable: true
+      mode: "action"                 # "action" | "service"
+      action_name: "/compute_path_to_pose"
+      service_name: "/planner_server/compute_path_to_pose"
+      timeout_sec: 5.0
+      allow_partial_path: false
+      expand_angle_deg: 10
+      expand_offsets: 2
+      use_current_pose_from_tf: true
+      start_pose_frame: ""
+
+    topics:
+      object_point: "/approaching_object_point"   # geometry_msgs/PointStamped
+      goal_pose: "/goal_pose"                     # geometry_msgs/PoseStamped
+      marker_edge: "/dock_pose_edge_marker"
+      marker_candidates: "/dock_pose_candidates"
+      marker_goal: "/dock_pose_goal"
+
+    publish:
+      latch: false
+
+    frames:
+      map: "projected_map"
+      odom: "camera_init"
+      base_link: "base_link"
+      base_footprint: ""
+      object_point_in: "camera_init"
+      compute_in: "camera_init"      # if "", auto = costmap frame
+      publish_goal_in: "camera_init"
+      tf_timeout_sec: 0.2
+
+    logging:
+      level: "DEBUG"                  # INFO (default) / DEBUG
+
+    timing:
+      timeout_ms: 120

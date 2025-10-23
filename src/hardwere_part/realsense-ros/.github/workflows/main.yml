@@ -1,0 +1,142 @@
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the ros2-development branch
+  push:
+    branches:
+      - ros2-development
+  pull_request:
+    branches:
+      - ros2-development
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions: read-all
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# This workflow contains a single job called "build"
+
+jobs:
+  build:
+    name: Build on ROS2 ${{ matrix.ros_distro }} and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        ros_distro: [rolling, iron, humble, foxy]
+        include:
+        - ros_distro: 'rolling'
+          os: ubuntu-22.04
+        - ros_distro: 'iron'
+          os: ubuntu-22.04
+        - ros_distro: 'humble'
+          os: ubuntu-22.04
+        - ros_distro: 'foxy'
+          os: ubuntu-20.04
+
+    steps:
+
+    - name: Setup ROS2 Workspace
+      run: |
+        mkdir -p ${{github.workspace}}/ros2/src
+
+    - uses: actions/checkout@v4
+      with:
+        path: 'ros2/src/realsense-ros'
+    
+    - name: Check Copyright & Line-Endings
+      shell: bash
+      run: |
+        cd ${{github.workspace}}/ros2/src/realsense-ros/scripts
+        ./pr_check.sh 
+
+    # setup-ros@v0.6 is the last version supporting foxy (EOL)
+    # setup-ros@v0.7 is needed to support humble/iron/rolling
+    # so, seperating steps with if conditions
+    - name: build ROS2 for foxy
+      if: ${{ matrix.ros_distro == 'foxy' }}
+      uses: ros-tooling/setup-ros@v0.6
+      with:
+        required-ros-distributions: ${{ matrix.ros_distro }}
+    - name: build ROS2 for humble/iron/rolling
+      if: ${{ matrix.ros_distro != 'foxy' }}
+      uses: ros-tooling/setup-ros@v0.7
+      with:
+        required-ros-distributions: ${{ matrix.ros_distro }}
+                
+    - name: Build RealSense SDK 2.0 (development branch) from source
+      run: |
+
+        # libusb-1.0-0-dev is needed for librealsense build in ubuntu 20.04
+        # This apt install command will be ignored in ubuntu 22.04 as libusb-1.0-0-dev already installed there
+        sudo apt install -y libusb-1.0-0-dev
+        
+        cd ${{github.workspace}}
+        git clone https://github.com/IntelRealSense/librealsense.git -b development
+        cd librealsense
+        sudo mkdir build
+        cd build
+        sudo cmake ../ -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=false -DBUILD_GRAPHICAL_EXAMPLES=false
+        sudo make uninstall
+        sudo make clean
+        sudo make -j10
+        sudo make install
+
+    - name: Build RealSense ROS2 Wrapper from source
+      run: |
+        echo "source /opt/ros/${{ matrix.ros_distro }}/setup.bash" >> ${{github.workspace}}/.bashrc
+        source ${{github.workspace}}/.bashrc
+        cd ${{github.workspace}}/ros2
+        echo "================= ROSDEP UPDATE ====================="
+        # temp fix for rolling sources.. TODO: track when we can remove the two commands below
+        # see https://discourse.ros.org/t/psa-rolling-ci-or-docker-build-fix-from-rosdep-errors-in-24-04-transition/36902
+        sudo sed -i "s|ros\/rosdistro\/master|ros\/rosdistro\/rolling\/2024-02-28|" /etc/ros/rosdep/sources.list.d/20-default.list
+        export ROSDISTRO_INDEX_URL=https://raw.githubusercontent.com/ros/rosdistro/rolling/2024-02-28/index-v4.yaml
+        rosdep update --rosdistro ${{ matrix.ros_distro }} --include-eol-distros
+        echo "================= ROSDEP INSTALL ===================="
+        rosdep install -i --reinstall --from-path src --rosdistro ${{ matrix.ros_distro }} --skip-keys=librealsense2 -y
+        echo "================== COLCON BUILD ======================"
+        colcon build  --cmake-args '-DBUILD_TOOLS=ON'
+
+    ## This step is commented out since we don't use rosbag files in "Run Tests" step below.
+    ## Please uncomment when "Run Tests" step is fixed to run all tests.
+    #- name: Download Data For Tests
+    #  if: ${{ matrix.ros_distro != 'rolling'}}
+    #  run: |
+    #    cd ${{github.workspace}}/ros2
+    #    bag_filename="https://librealsense.intel.com/rs-tests/TestData/outdoors_1color.bag";
+    #    wget $bag_filename -P "records/"
+    #    bag_filename="https://librealsense.intel.com/rs-tests/D435i_Depth_and_IMU_Stands_still.bag";
+    #    wget $bag_filename -P "records/"
+    #    sudo apt install ros-${{ matrix.ros_distro}}-launch-pytest
+       
+    - name: Install Packages For Tests
+      run: |
+        sudo apt-get install python3-pip
+        pip3 install numpy --upgrade
+        pip3 install numpy-quaternion tqdm
+ 
+    - name: Run Tests
+      run: |
+        cd ${{github.workspace}}/ros2
+        source ${{github.workspace}}/.bashrc
+        . install/local_setup.bash
+        # the next command might be needed for foxy distro, since this package is not installed
+        # by default in ubuntu 20.04. For other distro, the apt install command will be ignored.
+        sudo apt install -y ros-${{matrix.ros_distro}}-sensor-msgs-py
+        python3 src/realsense-ros/realsense2_camera/scripts/rs2_test.py non_existent_file
+    
+    # don't run integration tests for foxy since some testing dependecies packages like 
+    # tf_ros_py are not avaialble
+    # TODO: check when we can run integration tests on rolling
+    - name: Run integration tests
+      if: ${{ matrix.ros_distro != 'rolling' && matrix.ros_distro != 'foxy' }}
+      run: |
+        cd ${{github.workspace}}/ros2
+        source ${{github.workspace}}/.bashrc
+        . install/local_setup.bash
+        #export ROSBAG_FILE_PATH=${{github.workspace}}/ros2/records/
+        colcon test --packages-select realsense2_camera --event-handlers console_direct+
+        colcon test-result --all --test-result-base build/realsense2_camera/test_results/ --verbose

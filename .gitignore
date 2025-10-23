@@ -1,0 +1,16 @@
+# Compiled Python files
+*.pyc
+__pycache__/
+
+# Build directories
+build/
+devel/
+install/
+
+# IDE specific files
+.vscode/
+.idea/
+
+# ROS specific
+*.bag
+*.log

@@ -1,0 +1,38 @@
+1. jetson
+```
+sudo nvpmodel -m 0
+sudo jetson_clocks
+```
+2. docker with yolo
+```
+yolo export \
+  model=/data/yolo_weights/yolo12s.pt \
+  format=onnx imgsz=480,640 dynamic=False simplify=True half=True opset=13 device=0
+```
+
+3 docker with yolo
+```
+ /usr/src/tensorrt/bin/trtexec \
+  --onnx=/data/yolo_weights/yolo12s.onnx \
+  --saveEngine=/data/yolo_weights/yolo12s_480x640_fp16.engine \
+  --fp16 \
+  --memPoolSize=workspace:1536,tacticSharedMem:512 \
+  --builderOptimizationLevel=3 \
+  --avgTiming=3 \
+  --preview=+profileSharing0806 \
+  --useCudaGraph \
+  --timingCacheFile=/data/yolo_weights/trt_timing.cache \
+  --skipInference
+```
+
+/usr/src/tensorrt/bin/trtexec \
+  --onnx=/data/yolo_weights/yolo12s.onnx \
+  --saveEngine=/data/yolo_weights/yolo12s_480x640_fp16_2.engine \
+  --fp16 \
+  --memPoolSize=workspace:1024,tacticSharedMem:512 \
+  --builderOptimizationLevel=3 \
+  --avgTiming=3 \
+  --preview=+profileSharing0806 \
+  --useCudaGraph \
+  --timingCacheFile=/data/yolo_weights/trt_timing.cache \
+  --skipInference

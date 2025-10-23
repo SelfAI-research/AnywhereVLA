@@ -1,0 +1,70 @@
+/**:
+  ros__parameters:
+    common:
+      img_topic: "/camera/camera/color/image_raw"
+      lid_topic: "/velodyne_points"
+      imu_topic: "/camera/camera/imu"
+      img_en: 0
+      lidar_en: 1
+      ros_driver_bug_fix: false
+
+    extrin_calib:
+      # LiDAR → IMU  (ImuToLidarExtrinsic in FAST-LIO2 docs)
+      extrinsic_T: [ 0.02242634, -0.17342018, -0.09410330]
+      extrinsic_R: [-0.00437467,  0.99998827,  0.00208137, 
+                    -0.01770223, -0.00215851,  0.99984097, 
+                     0.99983373,  0.00433713,  0.01771147]
+
+      # LiDAR → Camera  (used for image projection)
+      Pcl: [ 0.02242634, -0.17342018, -0.09410330]
+      Rcl: [-0.00437467,  0.99998827,  0.00208137, 
+            -0.01770223, -0.00215851,  0.99984097, 
+             0.99983373,  0.00433713,  0.01771147]
+
+    preprocess:
+      lidar_type: 0           # VELO16 (velodyne) = 0, L515 (realsense) = 1,
+      blind: 0.03             # Filter closest points (meters) 
+      downsample_rate:  0.0   # Percentage of removed points before undistortion [0.0 - 100.0]
+      filter_size_surf: 0.2   # voxel size for cloud processing after undistortion
+
+#ros2 bag play /data/rotation/ --topics /velodyne_points /camera/camera/imu /camera/camera/color/image_raw -r 2.3
+
+    imu:
+      imu_en: true
+      imu_int_frame: 400
+      acc_cov: 0.2 # 0.2
+      gyr_cov: 0.5 # 0.5
+      b_acc_cov: 0.1 # 0.1
+      b_gyr_cov: 0.1 # 0.1
+
+    lio:
+      max_iterations: 100 # 
+      dept_err: 0.03  # range (depth) noise σ [meters]
+      beam_err: 0.4   # beam angular noise σ [degrees]
+      min_eigen_value: 0.0001 # 0.005  # eigenvalue of the point covariance (variance) [meters²]
+      voxel_size: 0.2
+      max_layer: 2
+      max_points_num: 50
+      layer_init_num: [5, 5, 5, 5, 5]
+
+    uav:
+      imu_rate_odom: true
+      gravity_align_en: true # Align the map with gravity
+
+    publish:
+      dense_map_en: True   # Publish points before downsampling or after
+      pub_effect_point_en: true
+      pub_scan_num: 1       # Set 2 to puplish each second frame
+      pub_plane_en: true
+
+    # For saving trajectory
+    evo:
+      seq_name: "01"
+      pose_output_en: false
+
+    # For saving PCD
+    pcd_save:
+      pcd_save_en: false
+      colmap_output_en: false # need to set interval = -1
+      filter_size_pcd: 0.15
+      interval: -1 # how many LiDAR frames saved in each pcd file; -1 : all frames will be saved in ONE pcd file, may lead to memory crash when having too much frames.

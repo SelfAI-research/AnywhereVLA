@@ -1,0 +1,110 @@
+# syntax=docker/dockerfile:1.7
+ARG BASE_IMG=dustynv/l4t-pytorch:r36.4.0
+FROM ${BASE_IMG}
+
+LABEL org.opencontainers.image.title="Jetson YOLO ROS2 Runtime" \
+      org.opencontainers.image.description="JP6.1-friendly PyTorch + ROS2 Humble runtime for YOLO nodes with TensorRT" \
+      org.opencontainers.image.licenses="MIT"
+
+SHELL ["/bin/bash","-o","pipefail","-c"]
+WORKDIR /workspace/ros2_ws
+
+# --- OS & dev tools ---
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && apt-get install -y --no-install-recommends \
+      curl gnupg2 ca-certificates lsb-release software-properties-common \
+      git git-lfs \
+      python3-pip python3-opencv \
+      libgl1 libglib2.0-0 \
+      build-essential pkg-config \
+ && git lfs install --system \
+ && rm -rf /var/lib/apt/lists/*
+
+# --- Add NVIDIA Jetson repo (JetPack 6.1, r36.4) ---
+RUN curl -fsSL https://repo.download.nvidia.com/jetson/jetson-ota-public.asc \
+      | gpg --dearmor -o /usr/share/keyrings/jetson-ota-public.gpg \
+ && echo "deb [signed-by=/usr/share/keyrings/jetson-ota-public.gpg] https://repo.download.nvidia.com/jetson/common r36.4 main" \
+      > /etc/apt/sources.list.d/nvidia-l4t-apt.list \
+ && echo "deb [signed-by=/usr/share/keyrings/jetson-ota-public.gpg] https://repo.download.nvidia.com/jetson/t234 r36.4 main" \
+      >> /etc/apt/sources.list.d/nvidia-l4t-apt.list
+
+# --- ROS 2 Humble from apt ---
+RUN --mount=type=cache,target=/var/cache/apt \
+    set -e \
+ && mkdir -p /usr/share/keyrings \
+ && curl -fsSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
+      | gpg --batch --yes --dearmor -o /usr/share/keyrings/ros-archive-keyring.gpg \
+ && CODENAME="$(. /etc/os-release && echo $UBUNTU_CODENAME)" \
+ && echo "deb [signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu ${CODENAME} main" \
+      > /etc/apt/sources.list.d/ros2.list \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends \
+      ros-humble-ros-base \
+      ros-humble-tf2-ros \
+      ros-humble-vision-msgs \
+      ros-humble-image-transport \
+      ros-humble-cv-bridge \
+      ros-humble-message-filters \
+      ros-humble-rmw-cyclonedds-cpp \
+      ros-humble-rmw-fastrtps-cpp \
+      ros-humble-rviz2 \
+      python3-colcon-common-extensions \
+      python3-scipy \
+ && rm -rf /var/lib/apt/lists/*
+
+# --- TensorRT runtime + Python bindings (JetPack 6.1) ---
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && apt-get install -y --no-install-recommends \
+      python3-libnvinfer \
+      libnvinfer-dev \
+      libnvinfer-plugin-dev \
+      libnvinfer-samples \
+ && rm -rf /var/lib/apt/lists/*
+
+# --- Keep pip on PyPI, everywhere ---
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_INDEX_URL=https://pypi.org/simple \
+    PIP_EXTRA_INDEX_URL=https://pypi.ngc.nvidia.com
+
+# --- rosdep ---
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && apt-get install -y --no-install-recommends python3-rosdep \
+ && rosdep init 2>/dev/null || true \
+ && rosdep update \
+ && rm -rf /var/lib/apt/lists/*
+
+# --- Pre-warm rosdep for your pkg (improves cache reuse) ---
+COPY src/object_detection/yolo_ros/package.xml /tmp/yolo_ros/package.xml
+RUN . /opt/ros/humble/setup.bash \
+ && mkdir -p /tmp/src/yolo_ros && cp /tmp/yolo_ros/package.xml /tmp/src/yolo_ros/ \
+ && rosdep install --from-paths /tmp/src --ignore-src -r -y --rosdistro humble \
+      --skip-keys="ament_flake8 ament_pep257" || true
+
+# --- Python deps ---
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python3 -m pip install --upgrade pip setuptools wheel \
+ && python3 -m pip install --no-cache-dir --upgrade \
+      "numpy<2" \
+      ultralytics \
+      onnx \
+      rosbags \
+      tqdm \
+      pyyaml
+
+# --- Python toolchain pin (ROS Humble-friendly) ---
+RUN python3 -m pip install --no-cache-dir --upgrade \
+      "pip<24.1" "setuptools==65.5.1" "wheel<0.43"
+RUN pip install --no-cache-dir "onnxslim>=0.1.67"
+RUN pip install --no-cache-dir onnxruntime
+
+# --- Build workspace ---
+COPY src/object_detection/ ./src
+RUN . /opt/ros/humble/setup.bash && colcon build --symlink-install
+
+# --- Shell convenience ---
+RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc \
+ && echo "source /workspace/ros2_ws/install/setup.bash" >> /root/.bashrc
+
+CMD ["bash"]

@@ -1,0 +1,39 @@
+frames:
+  map: camera_init            # TF frame of the occupancy grid
+  base: base_link             # TF frame of the robot base
+
+input:
+  map_topic: /visible_map                   # OccupancyGrid topic (-1 unknown, 0 free, 100 occ)
+  detector_topic: /detector/target_present  # std_msgs/Bool, true if target detected
+
+output:
+  candidate_markers_topic: /candidate_goals  # Frontier centroids (MarkerArray)
+  stop_message_topic: /exploration/stop      # Stop exploration message
+
+tf:
+  cache_sec: 10                   # TF cache duration (seconds) 
+  wait_sec: 0.02                  # Short wait for exact transform at cloud stamp
+  max_staleness_sec: 0.20         # Accept latest TF if it's <= this old vs cloud stamp
+  reuse_last_sec: 0.50            # Reuse last good origin up to this age when TF is missing
+
+camera:
+  max_range_m: 1.5                # Camera max range (only for yaw calculation)  (meters)
+  fov_deg: 70.0                   # Camera horizontal FOV (degrees)
+
+frontier:
+  free_threshold: 20               # Threshold for classifying a cell as free (0-100)
+  min_cluster_px: 20               # Minimum cluster size for frontier detection (pixels)
+  max_chunk_px: 50                 # Maximum chunk size for frontier detection (pixels)
+  min_goal_separation_m: 1         # Minimum distance between goals (meters)
+  offset_distance: 0               # Distance to move from edge to center (meters)
+  max_candidates: 15               # Maximum number of candidate goals
+  angle_samples: 15                # Number of angle samples for yaw optimization
+  gain_stride: 1                   # Stride for gain computation in frontiers
+
+  explore_range: 7.5                 # Exploration range (meters)
+
+navigation:
+  update_goal_period: 4             # Updates target goal every period
+
+logging:
+  debug: true                     # Set node logger to DEBUG and print per-callback timings

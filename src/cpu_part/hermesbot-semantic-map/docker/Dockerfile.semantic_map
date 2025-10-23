@@ -1,0 +1,30 @@
+# Dockerfile.semantic_map
+FROM ros2-base AS base
+
+SHELL ["/bin/bash", "-c"]
+WORKDIR /root/ros2_ws
+
+# ================================
+# 1. Install dependencies first (cached unless files change)
+# ================================
+COPY src/semantic_map/semantic_map/package.xml src/semantic_map/semantic_map/package.xml
+COPY src/semantic_map/semantic_map/setup.py src/semantic_map/semantic_map/setup.py 
+COPY src/semantic_map/requirements.txt requirements.txt
+
+# rosdep install (only dependencies, no source code yet)
+RUN rosdep install --from-paths src --ignore-src -r -y
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# ================================
+# 2. Build with colcon
+# ================================
+COPY src/semantic_map/ src/semantic_map
+RUN source /opt/ros/${ROS_DISTRO}/setup.bash && \
+    colcon build --symlink-install
+
+# ================================
+# 3. Environment setup
+# ================================
+RUN echo "source /root/ros2_ws/install/setup.bash" >> ~/.bashrc
+
+CMD ["bash"]

@@ -1,0 +1,16 @@
+/**:
+  ros__parameters:
+    frames:
+      map: camera_init          # parent of the SLAM pose
+      base: camera_link         # child (your odom child / body pose)
+
+      cloud: ""                 # if empty → use frames.map
+      path: ""                  # if empty → use frames.map
+      image: ""                 # if empty → use frames.map
+
+      imu_prop_world: camera_init     # the /LIVO2/imu_propagate frame
+
+      # sensors: (For Tf publisher)
+      lidar: velodyne
+      camera: camera_link
+      imu: imu_link

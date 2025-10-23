@@ -1,0 +1,18 @@
+{
+  id: 1                      // Modbus bus ID for this controller
+
+  // X4 hardware configuration
+  PWM_Limit:      800        // max PWM output
+  PWM_inc_limit:  20         // max PWM change per cycle
+  I_limit:        20.0       // current limit in Amps
+  V_min:          12.0       // minimum bus voltage before shutdown
+  Speed_PID_P:    60.0       // speed‐loop proportional gain
+  Speed_PID_I:    2.8        // speed‐loop integral gain
+  TimeOut:        500        // ms before safety timeout
+  TempShutDown:   75         // °C threshold
+
+  // Custom parameters for our wrapper
+  Reverse:      1            // set to 1 if motor is mounted backwards
+  TicksPerRev:  3840         // ticks per revolution
+  GearRatio:    22           // Ratio between read_motor shaft and wheel: Read_angle have the same ratio as a wheel, while Set_speed and get_speed have different 
+}

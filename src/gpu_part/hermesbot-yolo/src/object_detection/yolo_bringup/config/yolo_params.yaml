@@ -1,0 +1,44 @@
+"/**":
+  ros__parameters:
+    # === Core model configuration ===
+    model_type: "YOLO" # "YOLO" "World" "YOLOE"
+    # model: "yolo12s_480x640_fp16.engine"   # 4/8 - 75%
+    model: "yolo12s.pt"   # 4/8 - 75%
+    weights_dir: /data/yolo_weights
+
+    tracker: "bytetrack.yaml"    # Tracker config
+    device: "cuda:0"             # Inference device (CPU, cuda:0, etc.)
+
+    # === Inference settings ===
+    enable: True                 # Whether to start YOLO enabled
+    flip_method: -1              # Should algorithm flip the image: -2 = disabled, 0=vertical, 1=horizontal, -1=both
+    threshold: 0.45              # Minimum detection confidence
+    iou: 0.5                     # IoU threshold for NMS
+    imgsz_height: 480            # Image height for inference
+    imgsz_width: 640             # Image width for inference
+    half: True                   # Use FP16 (half-precision)
+    max_det: 10                  # Maximum number of detections per image
+    augment: False               # Enable test-time augmentation (TTA)
+    agnostic_nms: False          # Class-agnostic NMS
+    retina_masks: False          # Use high-resolution segmentation masks
+    min_box_area: 16.0           # px^2
+
+    allow_classes: ""
+    block_classes: ""
+
+    # === Image topic and encoding ===
+    input_image_topic: "/upper/realsense_upper/color/image_raw"   # Input image topic
+    detections_topic: "detections"               # output detection topic
+    yolo_encoding: "bgr8"                        # Encoding of the input image
+    image_reliability: 1                         # Image QoS: 0=system, 1=Reliable, 2=BestEffort
+    use_subscription: True
+
+    # === Launch flags ===
+    use_detect: True          # Activate detection main node
+    use_tracking: False       # Activate tracker node
+    use_debug: True           # Activate debug node
+    # profile_log_every: 10     # 0 disables logging
+    profile_window_sec: 5.0   # profiling window, 0 disables logging
+
+    # === ROS namespace ===
+    namespace: "yolo"        # Namespace for all nodes

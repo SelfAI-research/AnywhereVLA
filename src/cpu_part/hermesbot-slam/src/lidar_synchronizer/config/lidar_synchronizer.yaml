@@ -1,0 +1,36 @@
+lidar_synchronizer:
+  output_topic: "/lidar_points"
+  frame_id: 'camera_infra2_optical_frame'
+  queue_size: 50
+  log_every_n: 10
+  slop: 0.2          # maximum timestamp difference allowed between messages (seconds)
+  qos_depth: 200     # queue size in qos
+
+
+  lidars:
+    - topic: "/camera/camera/depth/color/points"
+      frame_id: "camera_depth_optical_frame"
+      preprocesing:
+        downsample_rate: 90.0  # percentage of removed points [0.0 - 100.0]
+        blind_range: 2.0       
+        max_range: 10         
+      transform:
+        translation: [0.0, 0.0, 0.0]
+        rotation:    [1.0, 0.0, 0.0,
+                      0.0, 1.0, 0.0,
+                      0.0, 0.0, 1.0]
+
+    - topic: "/velodyne_points"
+      frame_id: "velodyne"
+      preprocesing:
+        downsample_rate: 0.0  # percentage of removed points [0.0 - 100.0]
+        blind_range: 0.3      
+        max_range: 300        
+      transform:
+        translation: [0.0, -0.1, 0.0]
+        rotation:    [0.0,        1.0,    0.0,
+                      0.0871557,  0.0,    0.9961947,
+                      0.9961947,  0.0,    -0.0871557]
+        # rotation:    [0.0, 1.0, 0.0,
+        #               0.0, 0.0, 1.0,
+        #               1.0, 0.0, 0.0]

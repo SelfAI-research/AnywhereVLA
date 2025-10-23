@@ -1,0 +1,21 @@
+services:
+  hermesbot_nav2:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+    container_name: nav2_stack
+    network_mode: host
+    # restart: unless-stopped
+    environment:
+      # ROS graph
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - CYCLONEDDS_URI=file:///rmw/cyclonedds_nic.xml 
+    volumes:
+      - /home/nuc/ros_rmw:/rmw:ro
+      - ./config:/app/config:ro
+      - ./launch:/app/launch:ro

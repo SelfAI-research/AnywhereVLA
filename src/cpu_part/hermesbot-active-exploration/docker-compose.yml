@@ -1,0 +1,22 @@
+services:
+  active-exploration:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    network_mode: host
+    # restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - CYCLONEDDS_URI=file:///rmw/cyclonedds_nic.xml 
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - /home/nuc/ros_rmw:/rmw:ro
+      - ./configs:/app/configs:ro
+      - ./scripts:/app/scripts:ro
+    working_dir: /app
+    # command: bash 

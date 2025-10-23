@@ -1,0 +1,56 @@
+x-common-env: &common_env
+  ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+  NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
+  NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-all}
+
+services:
+  yolo_ros:
+    image: yolo_ros_build:latest
+    network_mode: host
+    runtime: nvidia
+    cpus: "3"
+    environment: *common_env
+    volumes:
+      - ../data:/data/
+      - ./src/object_detection/yolo_bringup/config/:/workspace/ros2_ws/config/
+      - ./src/object_detection/:/workspace/ros2_ws/src/
+      - ./docker.jetson/rmw:/rmw:ro
+    env_file:
+      - ./docker.jetson/docker-compose.env
+    command: >
+      bash -c "source /workspace/ros2_ws/install/setup.bash &&
+      ros2 launch yolo_bringup yolo.launch.py config:=/workspace/ros2_ws/config/yolo_params.yaml weights_dir:=/data/yolo_weights"
+
+  rviz:
+    image: yolo_ros_build:latest
+    network_mode: host
+    runtime: nvidia
+    environment:
+      <<: *common_env
+      DISPLAY: ${DISPLAY}
+      XAUTHORITY: /root/.Xauthority
+      QT_X11_NO_MITSHM: "1"
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${HOME}/.Xauthority:/root/.Xauthority:ro
+      - ../data:/data:ro
+      - ./src/object_detection/:/workspace/ros2_ws/src/
+      - ./src/object_detection/yolo_bringup/config/:/root/ros2_ws/config/
+      - ./docker.jetson/rmw:/rmw:ro
+    env_file:
+      - ./docker.jetson/docker-compose.env
+    command: >
+      bash -c "source /opt/ros/humble/setup.bash &&
+              rviz2 -d /root/ros2_ws/config/rviz_cfg.rviz"
+
+  enter:
+    image: yolo_ros_build:latest
+    network_mode: host
+    runtime: nvidia
+    environment:
+      <<: *common_env
+    volumes:
+      - ../data:/data:ro
+      - ./docker.jetson/rmw:/rmw:ro
+    env_file:
+      - ./docker.jetson/docker-compose.env
