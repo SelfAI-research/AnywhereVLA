@@ -21,7 +21,7 @@ Paper submitted to ICRA 2026. Code and documentation will be released upon accep
 
 ### 1.2 Project Website
 
-Visit our project website: [AnywhereVLA Landing Page]((https://selfai-research.github.io/AnywhereVLA/))
+Visit our project website: [AnywhereVLA Landing Page](https://selfai-research.github.io/AnywhereVLA/)
 
 ## 2. System Architecture
 
