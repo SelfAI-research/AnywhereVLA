@@ -7,10 +7,8 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-      - CYCLONEDDS_URI=file:///rmw/cyclonedds_nic.xml 
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
     volumes:
-      - /home/nuc/ros_rmw:/rmw:ro
       - ./config:/app/config
       - ./launch:/app/launch
       - ./src:/app/src

@@ -11,11 +11,9 @@ services:
           cpus: '2'
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-      - CYCLONEDDS_URI=file:///rmw/cyclonedds_nic.xml 
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
       - PYTHONUNBUFFERED=1
     volumes:
-      - /home/nuc/ros_rmw:/rmw:ro
       - ./config/obstacle_octomap.yaml:/app/config/octomap.yaml:rw
       - ./src:/app/src:rw
     working_dir: /app
@@ -33,11 +31,9 @@ services:
           cpus: '1'
     environment:
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-      - CYCLONEDDS_URI=file:///rmw/cyclonedds_nic.xml 
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
       - PYTHONUNBUFFERED=1
     volumes:
-      - /home/nuc/ros_rmw:/rmw:ro
       - ./config/visible_octomap.yaml:/app/config/octomap.yaml:rw
       - ./src:/app/src:rw
     working_dir: /app

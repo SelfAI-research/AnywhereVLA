@@ -1,14 +1,31 @@
-# Yolo Ros2
+# YOLO Object Detection
 
-Docker Yolo Ros2 wrapper for object detection
+ROS2 wrapper for YOLO object detection with multi-platform support.
 
-## Configs
+## Quick Start
 
-See [yolo_params](src/object_detection/yolo_bringup/config/yolo_params.yaml)
+```bash
+# Build
+make build
 
-## Run
+# Run (auto-detects platform)
+make run
 
+# Manual platform selection
+# Jetson
+docker compose -f docker.jetson/compose.jetson.yml up yolo_ros
+# x86
+docker compose -f docker.nuc/compose.nuc.yml up yolo_ros
 ```
-make build 
-make run 
-```
+
+## Configuration
+
+- **YOLO Params**: `src/object_detection/yolo_bringup/config/yolo_params.yaml`
+- **RViz Config**: `src/object_detection/yolo_bringup/config/rviz_cfg.rviz`
+
+## Features
+
+- Real-time object detection
+- ROS2 topic integration
+- Multi-platform support (Jetson/x86)
+- Configurable model parameters
