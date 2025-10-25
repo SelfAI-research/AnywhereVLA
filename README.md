@@ -1,6 +1,9 @@
-# AnywhereVLA
+# AnywhereVLA: Vision-Language-Action Model for Robotic Navigation and Manipulation
 
-## AnywhereVLA: Vision-Language-Action Model for Robotic Navigation and Manipulation
+[![arXiv](https://img.shields.io/badge/arXiv-2406.09246-df2a2a.svg?style=for-the-badge)](https://arxiv.org/abs/2509.21006)
+[![License](https://img.shields.io/github/license/TRI-ML/prismatic-vlms?style=for-the-badge)](LICENSE)
+
+<hr style="border: 2px solid gray;"></hr>
 
 ![Teaser](https://raw.githubusercontent.com/SelfAI-research/AnywhereVLA/main/.github/workflows/teaser.png)
 
