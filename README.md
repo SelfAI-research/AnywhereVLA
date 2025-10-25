@@ -1,6 +1,7 @@
 # AnywhereVLA: Language-Conditioned Exploration and Mobile Manipulation
 
 [![arXiv](https://img.shields.io/badge/arXiv-2406.09246-df2a2a.svg?style=for-the-badge)](https://arxiv.org/abs/2509.21006)
+[![Email](https://img.shields.io/badge/✉️-Email-informational?style=for-the-badge)](mailto:artem.voronov@skoltech.ru)
 [![License](https://img.shields.io/github/license/TRI-ML/prismatic-vlms?style=for-the-badge)](LICENSE)
 
 <hr style="border: 2px solid gray;"></hr>
@@ -162,7 +163,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-For questions and collaboration, please contact: [artem.voronov@skoltech.ru]
+For questions and collaboration, please contact: [artem.voronov@skoltech.ru](mailto:artem.voronov@skoltech.ru?subject=AnywhereVLA)
+
 
 ---
 
