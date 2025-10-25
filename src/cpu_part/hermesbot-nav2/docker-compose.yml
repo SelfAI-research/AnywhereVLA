@@ -1,0 +1,19 @@
+services:
+  hermesbot_nav2:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+    container_name: nav2_stack
+    network_mode: host
+    # restart: unless-stopped
+    environment:
+      # ROS graph
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+    volumes:
+      - ./config:/app/config:ro
+      - ./launch:/app/launch:ro

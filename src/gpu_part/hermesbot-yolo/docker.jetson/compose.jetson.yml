@@ -1,0 +1,11 @@
+services:
+  yolo_ros_build:
+    build:
+      context: .
+      dockerfile: docker.jetson/Dockerfile.jetson-yolo-l4t
+    image: yolo_ros_build:latest
+    env_file:
+      - ./docker.jetson/docker-compose.env
+    volumes:
+      - ./docker.jetson/rmw:/rmw:ro
+

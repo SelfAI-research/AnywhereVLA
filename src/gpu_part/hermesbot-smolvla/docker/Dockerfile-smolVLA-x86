@@ -1,0 +1,81 @@
+ARG UBUNTU=22.04
+ARG CUDA_TAG=12.4.1
+FROM nvidia/cuda:${CUDA_TAG}-cudnn-devel-ubuntu${UBUNTU}
+
+ARG TORCH=2.6.0
+ARG TV=0.21.0
+ARG TA=2.6.0
+ARG CU_TAG=cu124
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    HF_HOME=/root/.cache/huggingface \
+    TRANSFORMERS_CACHE=/root/.cache/huggingface/hub \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:${PATH}" \
+    PYTHONUNBUFFERED=1
+
+SHELL ["/bin/bash","-o","pipefail","-c"]
+WORKDIR /workspace
+
+# System deps, OpenCV via apt, FFmpeg, V4L2, build tools
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && apt-get install -y --no-install-recommends \
+      python3 python3-venv python3-pip \
+      git git-lfs curl ca-certificates \
+      ffmpeg v4l-utils python3-opencv \
+      libgl1 libglib2.0-0 libsm6 libxext6 libxrender1 \
+      build-essential pkg-config \
+    && git lfs install \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python venv
+RUN python3 -m venv "$VIRTUAL_ENV" && \
+    python -m pip install -U "pip<25" setuptools wheel
+
+# Constraints (keeps numpy and HF stack compatible)
+RUN printf '%s\n' \
+  'numpy>=1.26,<3' \
+  'tokenizers>=0.22,<0.24' \
+  'datasets>=2.19.0,<=3.6.0' \
+  'pandas==2.2.*' \
+  > /tmp/constraints.txt
+
+# PyTorch CUDA 12.4 wheels (from official index)
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python -m pip install --upgrade \
+      torch==${TORCH} torchvision==${TV} torchaudio==${TA} \
+      --index-url https://download.pytorch.org/whl/${CU_TAG}
+
+# Core HF + LeRobot (no deps to avoid re-pulling torch)
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python -m pip install --no-deps \
+      "transformers>=4.44,<5" "huggingface-hub>=0.24" "accelerate>=0.30" \
+      lerobot
+
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && apt-get install -y --no-install-recommends \
+      python3-dev libevdev-dev \
+    && git lfs install \
+    && rm -rf /var/lib/apt/lists/*
+
+# SmolVLA/utility deps
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python -m pip install -c /tmp/constraints.txt \
+      einops timm sentencepiece safetensors pandas pyyaml pillow requests tqdm regex \
+      draccus==0.10.0 jsonlines imageio deepdiff av num2words pynput pyserial \
+      "rerun-sdk>=0.21.0,<0.23.0" "termcolor>=2.4.0,<4" "wandb>=0.20.0"
+
+# === Extra installs ===
+RUN source /opt/venv/bin/activate && \
+    pip install opencv-python-headless && \
+    python -m pip install --no-cache-dir --only-binary=:all: "tokenizers>=0.22,<0.24" && \
+    pip install "datasets>=2.19.0,<3.0" && \
+    pip install psutil
+# ====================================
+
+# Workdir layout (bind-mount in compose; keep image lean)
+RUN mkdir -p /workspace/src /workspace/model /workspace/out
+
+CMD ["bash"]

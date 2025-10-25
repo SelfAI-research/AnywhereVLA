@@ -1,0 +1,70 @@
+services:
+  build_ros2_base:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ros2-base
+    image: ros2-base:latest
+
+  fastlivo_core:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.fastlivo2
+    image: fast-livo2:latest
+    container_name: fastlivo_core
+    network_mode: host
+    cpus: "4"
+    env_file: ./docker/docker-compose.env
+    environment:
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+    volumes:
+      - ./docker/rmw:/rmw:ro # DDS
+      - ../data:/data:ro
+      - ./src/FAST-LIVO2/config:/root/fast_ws/src/FAST-LIVO2/config
+    command: >
+      bash -c "source /opt/ros/humble/setup.bash &&
+               source /root/fast_ws/install/setup.bash &&
+               ros2 launch fast_livo mapping.launch.py use_rviz:=False"
+
+  lidar_synchronizer:
+    image: ros2-base:latest
+    network_mode: host
+    cpus: "4"
+    env_file: ./docker/docker-compose.env
+    environment:
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+    volumes:
+      - ./docker/rmw:/rmw:ro # DDS
+      - ./src/lidar_synchronizer:/root/fast_ws/src/lidar_synchronizer
+    command: >
+      bash -c "python3 src/lidar_synchronizer/lidar_synchronizer.py"
+
+  rviz:
+    image: ros2-base:latest
+    network_mode: host
+    runtime: nvidia
+    env_file: ./docker/docker-compose.env
+    environment:
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+      NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
+      NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-all}
+      DISPLAY: ${DISPLAY:-}
+      XAUTHORITY: /root/.Xauthority
+      QT_X11_NO_MITSHM: "1"
+    volumes:
+      - ./docker/rmw:/rmw:ro # DDS
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${HOME}/.Xauthority:/root/.Xauthority:ro
+      - ../data:/data:ro
+      - ./src/FAST-LIVO2/rviz_cfg/:/rviz_cfg/:rw
+    command: >
+      bash -lc "rviz2 -d /rviz_cfg/fast_livo2.rviz"
+
+  enter:
+    image: fast-livo2:latest
+    network_mode: host
+    env_file: ./docker/docker-compose.env
+    environment:
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+    volumes:
+      - ../data:/data:ro
+      - ./docker/rmw:/rmw:ro # DDS

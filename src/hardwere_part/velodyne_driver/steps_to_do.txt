@@ -1,0 +1,19 @@
+I run such commands:
+
+cp /opt/ros/humble/share/slam_toolbox/config/mapper_params_online_async.yaml  .  
+
+ros2 launch slam_toolbox online_async_launch.py slam_params_file:=mapper_params_online_async.yaml  - to start slam
+
+
+Publish tf:
+
+ros2 run tf2_ros static_transform_publisher 0 0 0.2 0 0 1.0  base velodyne  &
+ros2 run tf2_ros static_transform_publisher 0 0 0.2 0 0 0 1.0  odom base &
+
+
+Tools:
+
+sudo apt install ros-humble-rqt-tf-tree  
+ros2 run rqt_tf_tree rqt_tf_tree
+
+

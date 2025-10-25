@@ -1,0 +1,40 @@
+services:
+  octomap_ros2:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    network_mode: host
+    # restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./config/obstacle_octomap.yaml:/app/config/octomap.yaml:rw
+      - ./src:/app/src:rw
+    working_dir: /app
+    command: ["python3", "src/octomap_node.py"]
+
+  visible_octomap:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    network_mode: host
+    # restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./config/visible_octomap.yaml:/app/config/octomap.yaml:rw
+      - ./src:/app/src:rw
+    working_dir: /app
+    command: ["python3", "src/octomap_node.py"]

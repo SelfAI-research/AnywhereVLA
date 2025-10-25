@@ -1,0 +1,16 @@
+services:
+  ros2_base:
+    build:
+      context: .
+      dockerfile: docker.nuc/Dockerfile.ros2-base
+    image: ros2_base:latest
+
+  yolo_ros_build:
+    build:
+      context: .
+      dockerfile: docker.nuc/Dockerfile.object_detection
+    image: ros2_base:latest
+    env_file:
+      - ./docker.nuc/docker-compose.env
+    volumes:
+      - ./docker.nuc/rmw:/rmw:ro

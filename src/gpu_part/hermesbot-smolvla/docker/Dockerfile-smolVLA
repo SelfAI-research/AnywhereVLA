@@ -1,0 +1,149 @@
+# syntax=docker/dockerfile:1.7
+ARG BASE_IMG=dustynv/l4t-pytorch:r36.4.0
+FROM ${BASE_IMG}
+
+LABEL org.opencontainers.image.title="SmolVLA Jetson Runtime (LeRobot)" \
+      org.opencontainers.image.description="JetPack-friendly PyTorch runtime with curated deps for SmolVLA/LeRobot" \
+      org.opencontainers.image.source="(your-repo-url)" \
+      org.opencontainers.image.licenses="MIT"
+
+SHELL ["/bin/bash","-o","pipefail","-c"]
+WORKDIR /workspace
+
+# --- OS & dev tools ---
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && apt-get install -y --no-install-recommends \
+      curl gnupg2 ca-certificates lsb-release software-properties-common \
+      git git-lfs \
+      python3-pip python3-opencv \
+      libgl1 libglib2.0-0 \
+      build-essential pkg-config \
+ && git lfs install --system \
+ && rm -rf /var/lib/apt/lists/*
+
+
+# --- Add NVIDIA Jetson repo (JetPack 6.1, r36.4) ---
+RUN curl -fsSL https://repo.download.nvidia.com/jetson/jetson-ota-public.asc \
+      | gpg --dearmor -o /usr/share/keyrings/jetson-ota-public.gpg \
+ && echo "deb [signed-by=/usr/share/keyrings/jetson-ota-public.gpg] https://repo.download.nvidia.com/jetson/common r36.4 main" \
+      > /etc/apt/sources.list.d/nvidia-l4t-apt.list \
+ && echo "deb [signed-by=/usr/share/keyrings/jetson-ota-public.gpg] https://repo.download.nvidia.com/jetson/t234 r36.4 main" \
+      >> /etc/apt/sources.list.d/nvidia-l4t-apt.list
+
+# --- ROS 2 Humble from apt ---
+RUN --mount=type=cache,target=/var/cache/apt \
+    set -e \
+ && mkdir -p /usr/share/keyrings \
+ && curl -fsSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
+      | gpg --batch --yes --dearmor -o /usr/share/keyrings/ros-archive-keyring.gpg \
+ && CODENAME="$(. /etc/os-release && echo $UBUNTU_CODENAME)" \
+ && echo "deb [signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu ${CODENAME} main" \
+      > /etc/apt/sources.list.d/ros2.list \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends \
+      ros-humble-ros-base \
+      ros-humble-tf2-ros \
+      ros-humble-vision-msgs \
+      ros-humble-image-transport \
+      ros-humble-cv-bridge \
+      ros-humble-message-filters \
+      ros-humble-rmw-cyclonedds-cpp \
+      ros-humble-rmw-fastrtps-cpp \
+      ros-humble-rviz2 \
+      python3-colcon-common-extensions \
+      python3-scipy \
+ && rm -rf /var/lib/apt/lists/*
+
+# --- TensorRT runtime + Python bindings (JetPack 6.1) ---
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && apt-get install -y --no-install-recommends \
+      python3-libnvinfer \
+      libnvinfer-dev \
+      libnvinfer-plugin-dev \
+      libnvinfer-samples \
+ && rm -rf /var/lib/apt/lists/*
+
+# --- Keep pip on PyPI, everywhere ---
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_INDEX_URL=https://pypi.org/simple \
+    PIP_EXTRA_INDEX_URL=https://pypi.ngc.nvidia.com
+
+# --- rosdep ---
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && apt-get install -y --no-install-recommends python3-rosdep \
+ && rosdep init 2>/dev/null || true \
+ && rosdep update \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m pip install --no-cache-dir --upgrade \
+      "pip<24.1" "setuptools==65.5.1" "wheel<0.43"
+
+# Constraints to avoid numpy>=2 and other incompatible bumps
+RUN cat > /tmp/constraints.txt <<'EOF'
+numpy<2
+tokenizers>=0.22,<0.24
+datasets>=2.19.0,<=3.6.0
+pandas==2.2.*
+EOF
+
+# Core requirements (no torch here)
+RUN cat > /tmp/requirements.txt <<'EOF'
+einops
+timm
+sentencepiece
+safetensors
+pandas==2.2.*
+pyyaml
+pillow
+requests
+tqdm
+regex
+draccus==0.10.0
+jsonlines
+datasets>=2.19.0,<=3.6.0
+imageio
+deepdiff
+av
+num2words
+pynput
+pyserial>=3.5
+termcolor>=2.4.0,<4
+wandb>=0.20.0
+feetech-servo-sdk>=1.0.0
+EOF
+
+# Install LeRobot without deps (keeps JetPack torch), then HF stack, then the rest
+RUN pip install --no-deps --no-cache-dir lerobot
+RUN pip install --no-deps --no-cache-dir \
+      "transformers>=4.44,<5" "huggingface-hub>=0.24" "accelerate>=0.30"
+RUN pip install --no-cache-dir --only-binary=:all: "tokenizers>=0.22,<0.24"
+RUN pip install --no-cache-dir -r /tmp/requirements.txt -c /tmp/constraints.txt
+# RealSense Python (if you use it)
+RUN pip install --no-cache-dir pyrealsense2
+RUN pip install --upgrade --ignore-installed blinker
+RUN pip install --no-cache-dir --no-deps \
+    "gymnasium>=0.29.1,<1.0.0" \
+    "diffusers>=0.27.2,<0.36" \
+    "flask>=3.0.3,<4.0.0" \
+    "opencv-python-headless>=4.9.0,<5.0.0" \
+    "rerun-sdk>=0.21.0,<0.23.0" \
+    "packaging>=25.0" \
+    "attrs>=23.1.0"
+
+RUN pip install --no-cache-dir --no-deps "lerobot[smolvla]"
+RUN apt-get remove -y python3-scipy || true
+RUN pip install --no-cache-dir --upgrade scipy # fix scipy version
+
+# apt-get install mesa-utils vulkan-tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      mesa-utils vulkan-tools \
+ && rm -rf /var/lib/apt/lists/*
+
+# After installing python3-pip above
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc
+
+CMD ["bash"]

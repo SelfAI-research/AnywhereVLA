@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+
+  <participant profile_name="default_profile" is_default_profile="true">
+    <rtps>
+      <useBuiltinTransports>true</useBuiltinTransports>
+      <!-- Use default built-in transports for general compatibility -->
+    </rtps>
+  </participant>
+
+</profiles>

@@ -1,0 +1,24 @@
+name: hermesbot
+services:
+  # motor_control:
+  #   extends: { file: ./hermesbot-base/packages/docker-compose.yaml, service: motor_control }
+  # velodyne_ros2:
+  #   extends: { file: ./hermesbot-base/packages/docker-compose.yaml, service: velodyne_ros2 }
+  # realsense_ros2:
+  #   extends: { file: ./hermesbot-base/packages/docker-compose.yaml, service: realsense_ros2 }
+  # gamepad_control:
+  #   extends: { file: ./hermesbot-base/packages/docker-compose.yaml, service: gamepad_control }
+  octomap_ros2:
+    extends: { file: ./hermesbot-octomap/docker-compose.yml, service: octomap_ros2 }
+  visible_octomap:
+    extends: { file: ./hermesbot-octomap/docker-compose.yml, service: visible_octomap }
+  fastlivo2:
+    extends: { file: ./hermesbot-slam/docker-compose.yml, service: fastlivo_core }
+  hermesbot_nav2:
+    extends: { file: ./hermesbot-nav2/docker-compose.yml, service: hermesbot_nav2 }
+  approach_planner:
+    extends: { file: ./hermesbot-approaching/docker-compose.yml, service: approach_planner }
+  semantic_map:
+    extends: { file: ./hermesbot-semantic-map/docker-compose.yml, service: semantic_map }
+  visualize_semantic_map:
+    extends: { file: ./hermesbot-semantic-map/docker-compose.yml, service: rviz }

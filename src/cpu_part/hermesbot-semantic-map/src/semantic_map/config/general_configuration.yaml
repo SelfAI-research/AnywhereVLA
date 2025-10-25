@@ -1,0 +1,83 @@
+# Tips (Velodyne ring densify):
+#   num_rings: 16 for VLP-16, 32/64 for other models.
+#   az_bins ~ 400–800 for balance; more bins = finer azimuth grouping.
+#   interp_per_gap sets max extra samples between rings (1–5 typical).
+#   max_range_jump ~1.2–1.5 avoids bridging across rings with big difference in curvature.
+#   max_gap_m ~0.2–0.5 keeps interpolation local; null disables the check.
+lidar_densifier:
+  enable: True
+  num_rings: 16
+  az_bins: 1200
+  interp_per_gap: 4
+  max_range_jump: 1.31
+  max_gap_m: null         # use null if you want None in Python
+  voxel_size_m: 0.07
+
+object_projection:
+  depth_margin_m: 0.20    # keep points within z_min + margin
+  min_points: 5           # min points threshold
+  increase_x_size: 0     # increase the bb x size by pixs
+  increase_y_size: 0     # increase the bb y size by pixs 
+
+semantic_perception:
+  # ---- Online accumulation ----
+  outlier_method: "mad"        # robust per-observation trim
+  outlier_k: 1.0               # tighter → fewer bridge points
+  keep_max_points_per_obj: 2000
+
+  # ---- On-demand clustering (DBSCAN-like over KD-tree) ----
+  cluster_eps_m: 0.10          # neighborhood radius; raise to merge more, lower to split more
+  cluster_min_pts: 24          # min points to form a cluster; raise to reduce false positives
+  cluster_voxel_m: 0           # downsample before clustering (preserves shape, cuts dupes)
+  cluster_max_points: 25000
+
+  # ---- Ellipsoid (PCA) + confidence terms ----
+  ellipsoid_std_scale: 2.0
+  density_k_std: 1.0
+  density_ref: 700000.0        # points/m^3 for ~63% density term (matches your scale)
+  count_ref: 300.0             # points for ~63% count term (densify:300)
+
+  # ---- Circular coverage of viewpoints ----
+  coverage_theta_deg: 70.0     # [deg] Half-width θ₀ for coverage arcs around each observed yaw.
+  optical_vector: [1.0, 0.0, 0.0]  # Camera optical axis in world frame (unit-ish). E.g., [0,1,0] if +Y forward.
+
+  # ---- Confidence weights ----
+  prob_k_density: 3.5          # Weight for density term in the logistic input.
+  prob_k_coverage: 1.5         # Weight for circular coverage term.
+  prob_k_count: 0.5            # Weight for saturated point-count term.
+  prob_k_avgscore: 0.0         # Weight for average detector score term.
+  prob_bias: -3.0              # Bias for the logistic; adjust to shift overall confidence up/down.
+
+
+profiler:
+  log_every: 20
+  window_sec: 5.0
+
+debug:
+  en_image: False
+  en_colored: True
+  en_objects: True
+  debug_image_topic: /debug_image_topic
+  colored_pointcloud_topic: /colored_pointcloud_topic
+  objects_pointcloud_topic: /objects_pointcloud_topic
+  markers_topic: /markers_topic
+
+general:
+  camera_intrinsic_calibration: camera_intrinsic_calibration.yaml
+  camera_extrinsic_calibration: camera_extrinsic_calibration.yaml
+  semantic_perception_file: semantic_perception.yaml
+  coco_names_path: coco_names.yaml
+  
+  image_topic: /upper/realsense_upper/color/image_raw 
+  lidar_topic: /cloud_registered
+  detection_topic: /yolo/detections
+  
+  lidar_frame: velodyne
+  world_frame: camera_init
+
+  update_rate_hz: 2    # Rate for process_detection3d calls
+  detection_queue: 30  # For detection queue
+
+  tf_buffer_dur: 5.0  # tf buffer duration (sec)
+  max_time_diff: 0.10  # For topic and tf sync (sec)
+  topic_queue: 25      # Size of subscriber queue

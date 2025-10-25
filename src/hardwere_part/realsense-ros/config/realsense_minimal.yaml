@@ -1,0 +1,29 @@
+camera_name: camera
+
+# Color stream only
+enable_color: true
+color_width: 640
+color_height: 480
+color_fps: 15
+color_format: RGB8
+
+# Disable depth/infra
+enable_depth: false
+enable_infra1: false
+enable_infra2: false
+
+# IMU: enable both streams and fuse them
+enable_gyro: true
+enable_accel: true
+unite_imu_method: 2
+
+# Kill all extras
+align_depth: false
+pointcloud.enable: false
+enable_sync: false
+enable_rgbd: false
+hold_back_imu_for_frames: false
+
+# TF: publish only static
+publish_tf: true
+tf_publish_rate: 0.0

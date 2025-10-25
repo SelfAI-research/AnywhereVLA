@@ -1,0 +1,19 @@
+vla_class:
+  ckpt: "/workspace/model/smolvla_finetuned/checkpoints/020000/pretrained_model"
+  device: "auto"         # auto | cuda | cpu
+  one_step: true
+  fp16: true
+  image_sizes:
+    observation.images.ego_view: [720, 1280]
+    # observation.images.wrist_view: [256, 320]
+    # observation.images.third_view: [256, 320]
+
+ros_wrapper:
+  command_HZ: 20
+  start_topic: "/VLA_start_control"
+  manipulator_control_topic: "/manipulator_control"
+  manipulator_state_topic: "/manipulator_state"
+  vla_keys:
+    /side/realsense_side:  observation.images.ego_view
+    # /wrist/realsense_wrist: observation.images.wrist_view
+    # /third/realsense_third: observation.images.third_view

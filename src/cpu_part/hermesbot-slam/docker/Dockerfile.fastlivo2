@@ -1,0 +1,33 @@
+FROM ros2-base:latest
+ENV WS=/root/fast_ws
+
+# ────────── workspace ──────────
+RUN mkdir -p $WS/src
+WORKDIR $WS/src
+
+# ────────── install dependecy ──────────
+RUN git clone --depth 1 https://github.com/integralrobotics/rpg_vikit.git
+RUN git clone --depth 1 https://github.com/Livox-SDK/livox_ros_driver2.git && \
+    cd livox_ros_driver2 && \
+    cp -f package_ROS2.xml package.xml && \
+    cp -rf launch_ROS2/ launch/
+RUN git clone --depth 1 https://github.com/Livox-SDK/Livox-SDK2.git /tmp/Livox-SDK2 && \
+    cmake -S /tmp/Livox-SDK2 -B /tmp/Livox-SDK2/build -DCMAKE_BUILD_TYPE=Release && \
+    cmake --build /tmp/Livox-SDK2/build --parallel $(nproc) && \
+    cmake --install /tmp/Livox-SDK2/build && \
+    rm -rf /tmp/Livox-SDK2 && \
+    ldconfig
+# ────────── build dependecy (no source code yet) ──────────
+WORKDIR $WS
+RUN /bin/bash -c "source /opt/ros/humble/setup.bash && \
+    colcon build --symlink-install --cmake-args -DROS_EDITION=ROS2 -DHUMBLE_ROS=humble"
+
+# ────────── build FAST-LIVO2 ──────────
+COPY src/FAST-LIVO2 $WS/src/FAST-LIVO2
+RUN /bin/bash -c "source /opt/ros/humble/setup.bash && \
+    colcon build --symlink-install --cmake-args -DROS_EDITION=ROS2 -DHUMBLE_ROS=humble"
+
+# ────────── shell convenience ──────────
+RUN echo 'source /root/fast_ws/install/setup.bash' >> /root/.bashrc
+
+CMD ["/bin/bash"]

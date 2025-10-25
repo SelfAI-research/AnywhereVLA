@@ -1,0 +1,52 @@
+services:
+  build_ros2_base:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ros2-base
+    image: ros2-base:latest
+
+
+  semantic_map:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.semantic_map
+    network_mode: host
+    # runtime: nvidia
+    cpus: "4"
+    env_file: ./docker/docker-compose.env
+    environment:
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+      NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
+      NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-all}
+    volumes:
+      - ./docker/rmw:/rmw:ro # DDS
+      - ../data:/data/
+      - ./src/semantic_map:/root/ros2_ws/src/semantic_map
+      - ./src/object_detection:/root/ros2_ws/src/object_detection
+    command: >
+      bash -lc "source /root/ros2_ws/install/setup.bash &&
+      ros2 launch semantic_map_bringup semantic_map.launch.py config:=/root/ros2_ws/src/semantic_map/config/"
+
+      
+  rviz:
+    image: ros2-base:latest
+    network_mode: host
+    # runtime: nvidia
+    env_file: ./docker/docker-compose.env
+    environment:
+      XDG_RUNTIME_DIR: /tmp/runtime-root
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+      NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
+      NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-all}
+      DISPLAY: ${DISPLAY:-}
+      XAUTHORITY: /root/.Xauthority
+      QT_X11_NO_MITSHM: "1"
+    volumes:
+      - ./docker/rmw:/rmw:ro # DDS
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${HOME}/.Xauthority:/root/.Xauthority:ro
+      - ../data:/data:ro
+      - ./src/semantic_map/rviz_cfg/:/root/ros2_ws/rviz_cfg/
+    command: >
+      bash -lc "rviz2 -d /root/ros2_ws/rviz_cfg/semantic_slam.rviz"
+      # bash -lc "rviz2"

@@ -1,0 +1,117 @@
+# docker-compose.yml
+services:
+  smolvla:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-smolVLA
+    network_mode: host
+    gpus: all
+    ipc: host
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all}
+      - NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:-all}
+      - DISPLAY=${DISPLAY:-:1}
+      - XAUTHORITY=${XAUTHORITY:-/root/.Xauthority}
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - QT_X11_NO_MITSHM=1
+      - XDG_SESSION_TYPE=x11
+      - WGPU_BACKEND=gl
+      - EGL_PLATFORM=x11
+      - __EGL_VENDOR_LIBRARY_DIRS=/usr/share/glvnd/egl_vendor.d
+      - __GLX_VENDOR_LIBRARY_NAME=nvidia
+      - HF_HOME=${HF_HOME:-/workspace/hf_home}
+      - WAYLAND_DISPLAY=
+      - VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json
+      - LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/tegra:/usr/lib/aarch64-linux-gnu/tegra-egl:${LD_LIBRARY_PATH:-}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /home/orin/.Xauthority:/root/.Xauthority:ro
+      - /usr/lib/aarch64-linux-gnu/tegra:/usr/lib/aarch64-linux-gnu/tegra:ro
+      - /usr/lib/aarch64-linux-gnu/tegra-egl:/usr/lib/aarch64-linux-gnu/tegra-egl:ro
+      - /usr/share/glvnd/egl_vendor.d:/usr/share/glvnd/egl_vendor.d:ro
+      - /usr/share/vulkan:/usr/share/vulkan:ro
+      - /usr/share/vulkan/icd.d:/usr/share/vulkan/icd.d:ro
+      - /etc/vulkan:/etc/vulkan:ro
+      - /etc/vulkan/icd.d:/etc/vulkan/icd.d:ro
+      - /run/udev:/run/udev:ro
+      - /usr/src/tensorrt:/usr/src/tensorrt:ro
+      - /dev/:/dev
+      # your project mounts:
+      - /home/orin/lerobot:/workspace/lerobot
+      - ./src:/workspace/src
+      - ./model:/workspace/model
+      - ./hf_home:/workspace/hf_home
+      - ./config:/workspace/config
+      - ./scripts:/workspace/scripts
+      # - /media/orin/kostya_drive2/:/workspace/hf_home/lerobot/VorArt/
+    tmpfs:
+      - /tmp/runtime-root
+    devices:
+      - /dev/dri:/dev/dri
+    privileged: true
+    group_add:
+      - video
+      - dialout
+      - plugdev
+    command: ["bash", "-l"]
+
+  smolvla_ros:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-smolVLA
+    network_mode: host
+    gpus: all
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all}
+      - NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:-graphics,utility,compute}
+      - DISPLAY=${DISPLAY:-}
+      - XAUTHORITY=/root/.Xauthority
+      - QT_X11_NO_MITSHM=1
+      - HF_HOME=${HF_HOME:-/root/.cache/huggingface}
+    volumes:
+      - ${HOME}/.Xauthority:/root/.Xauthority:ro
+      - ${XAUTHORITY:-~/.Xauthority}:/root/.Xauthority:ro
+      - /usr/src/tensorrt:/usr/src/tensorrt:ro
+      - ./src:/workspace/src
+      - ./model:/workspace/model
+      - ./config:/workspace/config
+    command: >
+      bash -c "source /opt/ros/humble/setup.bash &&
+              python3 ../src/smolVLA_ros.py --config /workspace/config/vla_ros.yaml"
+    
+
+
+  smolvlax86:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-smolVLA-x86
+      args:
+        CUDA_TAG: "12.4.1"
+        UBUNTU: "22.04"
+        TORCH: "2.6.0"
+        TV: "0.21.0"
+        TA: "2.6.0"
+        CU_TAG: "cu124"
+    image: lerobot-smolvla:x86-cu124
+    container_name: lerobot-smolvla-x86
+    ipc: host
+    gpus: all
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all}
+      - NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:-graphics,utility,compute}
+      # X11
+      - DISPLAY=${DISPLAY:-}
+      - XAUTHORITY=/root/.Xauthority
+      - QT_X11_NO_MITSHM=1
+    volumes:
+      - ./docker/rmw:/rmw:ro  # Fast DDS XML
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${HOME}/.Xauthority:/root/.Xauthority:ro
+      - ./data:/data
+      - ./src:/workspace/src
+    devices:
+      - /dev/video0:/dev/video0 # optional
+    command: ["bash","-l"]

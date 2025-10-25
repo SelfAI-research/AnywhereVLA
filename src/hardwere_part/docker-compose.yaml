@@ -1,0 +1,88 @@
+services:
+  # ==================
+  #     HARDWARE     
+  # ==================
+  motor_control:
+    build: ./motors
+    working_dir: /app
+    privileged: true
+    network_mode: host
+    # restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+    volumes:
+      - /dev:/dev
+      - ./motors/src:/app/src
+    environment:
+      - UDEV=1
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp 
+
+  # ==================
+  #      DRIVERS     
+  # ==================
+  velodyne_ros2:
+    build:
+      context: ./velodyne_driver
+      dockerfile: Dockerfile
+    privileged: true
+    network_mode: host
+    tty: true
+    # restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+    volumes:
+      - /dev:/dev
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp 
+
+  realsense_ros2:
+    build:
+      context: ./realsense-ros
+      dockerfile: Dockerfile
+    privileged: true
+    network_mode: host
+    tty: true
+    # restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+    volumes:
+      - /dev:/dev
+      - /sys:/sys
+      # - ./realsense-ros/config/realsense_minimal.yaml:/realsense_ros/config/realsense_minimal.yaml:ro
+    device_cgroup_rules:
+      - 'c 81:* rmw'
+      - 'c 189:* rmw'
+      - 'c 246:* rmw'
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp 
+
+  # ==================
+  #     SOFTWARE     
+  # ==================
+
+  gamepad_control:
+    build: ./gamepad
+    working_dir: /app
+    privileged: true
+    network_mode: host
+    # restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+    volumes:
+      - /dev:/dev
+      - ./gamepad/src:/app/src
+    environment:
+      - UDEV=1
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp

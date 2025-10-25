@@ -1,0 +1,29 @@
+FROM ros2-base:latest AS base
+
+SHELL ["/bin/bash", "-c"]
+WORKDIR /root/ros2_ws
+
+# ================================
+# 1. Install dependencies first (cached unless files change)
+# ================================
+COPY src/object_detection/requirements.txt requirements.txt
+COPY src/object_detection/yolo_ros/package.xml src/yolo_ros/package.xml
+COPY src/object_detection/yolo_ros/setup.py src/yolo_ros/setup.py 
+
+# rosdep install (only dependencies, no source code yet)
+RUN rosdep install --from-paths src --ignore-src -r -y
+
+# Install Python requirements
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# ================================
+# 3. Build with colcon
+# ================================
+COPY src/object_detection/ src
+RUN source /opt/ros/${ROS_DISTRO}/setup.bash && \
+    colcon build --symlink-install
+
+# Add environment sourcing
+RUN echo "source /root/ros2_ws/install/setup.bash" >> ~/.bashrc
+
+CMD ["bash"]
