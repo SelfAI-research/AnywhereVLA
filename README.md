@@ -17,7 +17,7 @@ The system features:
 
 ### 1.1 Related Paper
 
-Paper submitted to ICRA 2026. Code and documentation will be released upon acceptance.
+Paper submitted to ICRA 2026.
 
 ### 1.2 Project Website
 
