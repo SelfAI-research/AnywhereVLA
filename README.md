@@ -140,11 +140,11 @@ Key configuration files:
 If you use AnywhereVLA in your research, please cite our work:
 
 ```bibtex
-@article{anywherevla2026,
-  title={AnywhereVLA: Vision-Language-Action Model for Robotic Navigation and Manipulation},
-  author={Your Name and Collaborators},
-  journal={IEEE International Conference on Robotics and Automation (ICRA)},
-  year={2026}
+@article{gubernatorov2025anywherevla,
+  title={AnywhereVLA: Language-Conditioned Exploration and Mobile Manipulation},
+  author={Gubernatorov, Konstantin and Voronov, Artem and Voronov, Roman and Pasynkov, Sergei and Perminov, Stepan and Guo, Ziang and Tsetserukou, Dzmitry},
+  journal={arXiv preprint arXiv:2509.21006},
+  year={2025}
 }
 ```
 
